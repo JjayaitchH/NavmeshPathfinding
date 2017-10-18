@@ -1,0 +1,13 @@
+Partners: 
+Alex Mao (acmao)
+Jesus Hernandez (jherna83)
+
+Files Included
+p2_pathfinder.py
+p2_interactive.py
+p2_meshbuilder.py
+
+all .png and .gif files provided 
+
+custom .png image also included but the program would not create a mesh,
+other students seemed to have this problem.

@@ -27,29 +27,42 @@ def find_path (source_point, destination_point, mesh):
     
     #Fillingn dictionaries and lists n shit
     detailed_points[a] = source_point
+    f_detailed_points
+    b_detailed_points
     
     #A* Stuff
-    queue = [(0, a)]
+    start_heuristic = calc_distance(source_point, destination_point)
+    end_heuristic = calc_distance(destination_point, destination_point) #yeah, I know it's just 0
+    queue = [(start_heuristic, a, 'destination')]
+    heappush(queue, (end_heuristic, b, 'initial'))
+
     
     distances = {}
     distances[a] = 0
+    f_distances = {} # f = forward
+    b_distances = {} # b = backward
 
+    f_backpointers = {} # f = forward
+    b_backpointers = {} # b = backward
     backpointers = {}
     backpointers[a] = None
 
     while queue:
-        current_dist, current_box = heappop(queue)
+        current_dist, current_box, curr_goal = heappop(queue)
 
-        if current_box == b:
-            #path = [(source_point,destination_point)]
-            current_back_box = backpointers[current_box]
-            path.append((detailed_points[current_box],destination_point))
-            path.append((detailed_points[current_back_box],detailed_points[current_box]))
+        if current_box in f_backpointers and current_box in b_backpointers:
+            f_current_back_box = f_backpointers[current_box]
+            b_current_back_box = b_backpointers[current_box]
 
-            while current_back_box is not None:
-                if backpointers[current_back_box] != None:
-                    path.append((detailed_points[backpointers[current_back_box]],detailed_points[current_back_box]))
-                current_back_box = backpointers[current_back_box]
+            while f_current_back_box is not None:
+                if f_backpointers[f_current_back_box] != None:
+                    path.append((f_detailed_points[f_backpointers[f_current_back_box]],f_detailed_points[f_current_back_box]))
+                f_current_back_box = f_backpointers[f_current_back_box]
+
+            while b_current_back_box is not None:
+                if b_backpointers[b_current_back_box] != None:
+                    path.append((b_detailed_points[b_backpointers[b_current_back_box]],b_detailed_points[b_current_back_box]))
+                b_current_back_box = b_backpointers[b_current_back_box]
                 
             return path, boxes.keys()
         
@@ -59,25 +72,26 @@ def find_path (source_point, destination_point, mesh):
             boxes[adj_box] = closest_point
         
             if adj_box not in distances or path_cost < distances[adj_box]:
-                distances[adj_box] = path_cost
-                detailed_points[adj_box] = closest_point
-                new_heuristic = calc_distance(closest_point, destination_point)
-                heappush(queue,((distances[adj_box] + new_heuristic), adj_box))
-                backpointers[adj_box] = current_box
-
-        """
-        for adj_box in mesh['adj'][current_box]:
-            closePoint = get_closest_point(detailed_points[current_box], adj_box)
-            pathcost = current_dist + calc_distance(detailed_points[current_box], closePoint)
-            
-            if adj_box not in distances or pathcost < distances[adj_box]:
-                boxes[adj_box] = closePoint
-                detailed_points[adj_box] = closePoint
-                distances[adj_box] = pathcost
-                backpointers[adj_box] = current_box
-                #path.append((detailed_points[current_box],detailed_points[adj_box]))
-                heappush(queue, (pathcost, adj_box))
-                """
+                #########################################################
+                if curr_goal == 'destination': 
+                    distances[adj_box] = path_cost
+                    f_distances[adj_box] = path_cost
+                    detailed_points[adj_box] = closest_point
+                    f_detailed_points[adj_box] = closest_point
+                    new_heuristic = calc_distance(closest_point, destination_point)
+                    heappush(queue,((distances[adj_box] + new_heuristic), adj_box, 'destination'))
+                    backpointers[adj_box] = current_box
+                    f_backpointers[adj_box] = current_box
+                elif curr_goal == 'initial':
+                    distances[adj_box] = path_cost
+                    b_distances[adj_box] = path_cost
+                    detailed_points[adj_box] = closest_point
+                    b_detailed_points[adj_box] = closest_point
+                    new_heuristic = calc_distance(closest_point, destination_point)
+                    heappush(queue, ((distances[adj_box] + new_heuristic), adj_box, 'initial'))
+                    backpointers[adj_box] = current_box
+                    b_backpointers[adj_box] = current_box
+                #########################################################
                 
     path.append((source_point,destination_point))
     return path, boxes.keys()
